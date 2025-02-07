@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Market AI Analyst - Оплата</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Market AI Analyst</h1>
+        <div class="payment-options">
+            <div class="payment-card">
+                <h2>Базовый тариф</h2>
+                <div class="price">999 ₽</div>
+                <ul class="features">
+                    <li>✅ 1 месяц доступа</li>
+                    <li>✅ Все валютные пары</li>
+                    <li>✅ Базовая аналитика</li>
+                    <li>❌ AI-прогнозы</li>
+                    <li>❌ VIP поддержка</li>
+                </ul>
+                <button onclick="selectPlan('basic')" class="btn">Выбрать</button>
+            </div>
+
+            <div class="payment-card premium">
+                <div class="badge">Популярный</div>
+                <h2>Премиум тариф</h2>
+                <div class="price">2499 ₽</div>
+                <ul class="features">
+                    <li>✅ 3 месяца доступа</li>
+                    <li>✅ Все валютные пары</li>
+                    <li>✅ Расширенная аналитика</li>
+                    <li>✅ AI-прогнозы</li>
+                    <li>✅ VIP поддержка</li>
+                </ul>
+                <button onclick="selectPlan('premium')" class="btn btn-premium">Выбрать</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let tg = window.Telegram.WebApp;
+        tg.expand();
+
+        function selectPlan(plan) {
+            tg.sendData(JSON.stringify({
+                action: 'select_plan',
+                plan: plan
+            }));
+            tg.close();
+        }
+    </script>
+</body>
+</html> 

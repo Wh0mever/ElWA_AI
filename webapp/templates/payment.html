@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Market AI Analyst - Оплата</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='css/styles.css') }}">
+    <script src="https://js.stripe.com/v3/"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Market AI Analyst</h1>
+            <p>Выберите план подписки</p>
+        </header>
+
+        <main>
+            <div class="pricing-cards">
+                <!-- Базовый план -->
+                <div class="pricing-card">
+                    <div class="card-header">
+                        <h2>Базовый</h2>
+                        <p class="price">999 ₽</p>
+                    </div>
+                    <div class="card-body">
+                        <ul>
+                            <li>✅ Forex сигналы</li>
+                            <li>✅ Технический анализ</li>
+                            <li>✅ История сделок</li>
+                            <li>❌ Crypto сигналы</li>
+                            <li>❌ AI прогнозы</li>
+                        </ul>
+                        <button class="select-plan" data-plan="basic" data-amount="999">
+                            Выбрать
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Премиум план -->
+                <div class="pricing-card premium">
+                    <div class="card-header">
+                        <h2>Премиум</h2>
+                        <p class="price">2499 ₽</p>
+                    </div>
+                    <div class="card-body">
+                        <ul>
+                            <li>✅ Forex сигналы</li>
+                            <li>✅ Crypto сигналы</li>
+                            <li>✅ Технический анализ</li>
+                            <li>✅ AI прогнозы</li>
+                            <li>✅ История сделок</li>
+                            <li>✅ Приоритетная поддержка</li>
+                        </ul>
+                        <button class="select-plan" data-plan="premium" data-amount="2499">
+                            Выбрать
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Форма оплаты -->
+            <div id="payment-form" class="hidden">
+                <div class="form-row">
+                    <div id="card-element"></div>
+                    <div id="card-errors" role="alert"></div>
+                </div>
+                <button id="submit-payment">Оплатить</button>
+            </div>
+
+            <!-- Индикатор загрузки -->
+            <div id="loading" class="hidden">
+                <div class="spinner"></div>
+                <p>Обработка платежа...</p>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Инициализация Stripe
+        const stripe = Stripe('{{ stripe_public_key }}');
+        const elements = stripe.elements();
+
+        // Создание элемента карты
+        const card = elements.create('card', {
+            style: {
+                base: {
+                    fontSize: '16px',
+                    color: '#32325d',
+                    '::placeholder': {
+                        color: '#aab7c4'
+                    }
+                },
+                invalid: {
+                    color: '#fa755a',
+                    iconColor: '#fa755a'
+                }
+            }
+        });
+
+        // Монтирование элемента карты
+        card.mount('#card-element');
+
+        // Обработка ошибок валидации карты
+        card.addEventListener('change', function(event) {
+            const displayError = document.getElementById('card-errors');
+            if (event.error) {
+                displayError.textContent = event.error.message;
+            } else {
+                displayError.textContent = '';
+            }
+        });
+
+        // Обработка выбора плана
+        document.querySelectorAll('.select-plan').forEach(button => {
+            button.addEventListener('click', async function() {
+                const amount = this.dataset.amount;
+                const plan = this.dataset.plan;
+                
+                document.querySelector('.pricing-cards').classList.add('hidden');
+                document.getElementById('payment-form').classList.remove('hidden');
+                
+                try {
+                    const response = await fetch('/create-payment-intent', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            amount: amount,
+                            plan: plan
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    const clientSecret = data.clientSecret;
+                    
+                    // Обработка отправки формы
+                    const form = document.getElementById('payment-form');
+                    form.addEventListener('submit', async function(event) {
+                        event.preventDefault();
+                        
+                        const loading = document.getElementById('loading');
+                        loading.classList.remove('hidden');
+                        
+                        const {error} = await stripe.confirmCardPayment(clientSecret, {
+                            payment_method: {
+                                card: card,
+                                billing_details: {
+                                    name: 'Customer Name'
+                                }
+                            }
+                        });
+                        
+                        loading.classList.add('hidden');
+                        
+                        if (error) {
+                            const errorElement = document.getElementById('card-errors');
+                            errorElement.textContent = error.message;
+                        } else {
+                            window.location.href = '/success';
+                        }
+                    });
+                } catch (error) {
+                    console.error('Error:', error);
+                }
+            });
+        });
+    </script>
+</body>
+</html> 
