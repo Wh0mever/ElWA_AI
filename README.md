@@ -6,7 +6,7 @@
 [![Website](https://img.shields.io/badge/Website-whomever.tech-blue)](https://whomever.tech)
 
 <div align="center">
-  <img src="https://raw.githubusercontent.com/Wh0mever/ElWA_AI/main/docs/logo.png" alt="ELWA AI Logo" width="200"/>
+  <h1>🤖 📊 💹</h1>
   <br/>
   <p><i>🚀 Умный анализ рынка с использованием искусственного интеллекта</i></p>
 </div>
